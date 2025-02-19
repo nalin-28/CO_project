@@ -31,32 +31,34 @@ def rTypeinstruction(rd,rs1,rs2,cmd):
     funct3 = {"add":0b000,"sub":0b000,"slt":0b010,"srl":0b101,"or":0b110,"and":0b111};
     return format((funct7 << 25) | (rs2 << 20) | (rs1 << 15) | (funct3[cmd] << 12) | (rd << 7) | opcode("r"), '032b');
 
-def iTypeinstruction(rd,rs1,imm,cmd):
-    new_imm = None
-    if imm>=0:
-        new_imm = format((imm & (1 <<12)-1),"012b");
+def iTypeinstruction(rd, rs1, imm, cmd):
+    if imm >= 0:
+        new_imm = format(imm & ((1 << 12) - 1), "012b");
     else:
-        new_imm = format((-imm & (1 << 12)-1),"012b");
-        complement = ''.join('1' if bit == '0' else '0' for bit in imm);
-        two_complement = (bin(int(complement, 2) + 1));
+        new_imm = format((-imm & ((1 << 12) - 1)), "012b");
+        
+        complement = ''.join('1' if bit == '0' else '0' for bit in new_imm);
+        two_complement = bin(int(complement, 2) + 1)[2:].zfill(12);
         new_imm = two_complement;
-    
-    funct3 = {"lw":0b010,"addi":0b000,"jalr":0b000};
-    return format((int(new_imm,2) << 20) | (rs1 << 15) | (funct3[cmd] << 12) | (rd << 7) | opcode(cmd), '032b');
 
-def sTypeinstruction(rs1,rs2,imm,cmd):
-    new_imm = None
-    if imm>=0:
-        new_imm = format((imm & (1 <<12)-1),"012b");
+    funct3 = {"lw": 0b010, "addi": 0b000, "jalr": 0b000}
+    return format((int(new_imm, 2) << 20) | (rs1 << 15) | (funct3[cmd] << 12) | (rd << 7) | opcode(cmd), '032b')
+
+
+def sTypeinstruction(rs1, rs2, imm, cmd):
+    if imm >= 0:
+        new_imm = format(imm & ((1 << 12) - 1), "012b")  ;
     else:
-        new_imm = format((-imm & (1 << 12)-1),"012b");
-        complement = ''.join('1' if bit == '0' else '0' for bit in imm);
-        two_complement = (bin(int(complement, 2) + 1));
-        new_imm = two_complement;
-    
-    imm_left = (new_imm >> 5) & 0x7F;
-    imm_right = new_imm & 0x1F;
-    return format((imm_left << 25) | (rs2 << 20) | (rs1 << 15) | (0b010 << 12) | (imm_right << 7) | opcode(cmd), '032b');
+        new_imm = format((-imm & ((1 << 12) - 1)), "012b");
+        complement = ''.join('1' if bit == '0' else '0' for bit in new_imm)  
+        two_complement = bin(int(complement, 2) + 1)[2:].zfill(12)  
+        new_imm = two_complement  
+
+    new_imm_int = int(new_imm, 2)  
+
+    imm_left = (new_imm_int >> 5) & 0x7F  
+    imm_right = new_imm_int & 0x1F  
+    return format((imm_left << 25) | (rs2 << 20) | (rs1 << 15) | (0b010 << 12) | (imm_right << 7) | opcode(cmd), '032b')
 
 def bTypeinstruction(rs1,rs2,imm,cmd):
     new_imm = None
@@ -64,7 +66,7 @@ def bTypeinstruction(rs1,rs2,imm,cmd):
         new_imm = format((imm & (1 <<12)-1),"012b");
     else:
         new_imm = format((-imm & (1 << 12)-1),"012b");
-        complement = ''.join('1' if bit == '0' else '0' for bit in imm);
+        complement = ''.join('1' if bit == '0' else '0' for bit in new_imm);
         two_complement = (bin(int(complement, 2) + 1));
         new_imm = two_complement;
     
@@ -75,23 +77,23 @@ def bTypeinstruction(rs1,rs2,imm,cmd):
     imm4To1bit = (new_imm >> 1) & 0xF;
     imm11Bit = (new_imm >> 10) & 0x1;
 
-    return format((imm12Bit << 31) | (imm10To5bit << 25) | (rs2 << 20) | (rs1 << 15) | (funct3 << 12) | (imm4To1bit << 8) | (imm11Bit << 7) | opcode(cmd), '032b');
+    return format((imm12Bit << 31) | (imm10To5bit << 25) | (rs2 << 20) | (rs1 << 15) | (funct3[cmd] << 12) | (imm4To1bit << 8) | (imm11Bit << 7) | opcode(cmd), '032b');
 
 def jTypeinstruction(rd,imm,cmd):
+    imm = int(imm)
     new_imm = None
     if imm>=0:
-        new_imm = format((imm & (1 <<12)-1),"012b");
+        new_imm = format((imm & ((1 <<21)-1)),"021b");
     else:
-        new_imm = format((-imm & (1 << 12)-1),"012b");
-        complement = ''.join('1' if bit == '0' else '0' for bit in imm);
+        new_imm = format((-imm & ((1 << 21)-1)),"021b");
+        complement = ''.join('1' if bit == '0' else '0' for bit in new_imm);
         two_complement = (bin(int(complement, 2) + 1));
         new_imm = two_complement;
 
     new_imm = int(new_imm,2);
-    imm20Bit = (new_imm >> 20) & 0x1;
-    imm10To1bit = (new_imm >> 1) & 0x3FF;
-    imm11Bit = (new_imm >> 11) & 0x1;
-    imm19To12Bit = (new_imm >> 12) & 0x7F;
+    imm20Bit = (new_imm >> 20) & 0b1;
+    imm10To1bit = (new_imm >> 1) & 0b1111111111;
+    imm11Bit = (new_imm >> 11) & 0b1;
+    imm19To12Bit = (new_imm >> 12) & 0b1111111;
 
     return format((imm20Bit << 31) | (imm10To1bit << 21) | (imm11Bit << 20) | (imm19To12Bit << 12) | (rd << 7) | opcode(cmd), '032b');
-
