@@ -76,3 +76,22 @@ def bTypeinstruction(rs1,rs2,imm,cmd):
     imm11Bit = (new_imm >> 10) & 0x1;
 
     return format((imm12Bit << 31) | (imm10To5bit << 25) | (rs2 << 20) | (rs1 << 15) | (funct3 << 12) | (imm4To1bit << 8) | (imm11Bit << 7) | opcode(cmd), '032b');
+
+def jTypeinstruction(rd,imm,cmd):
+    new_imm = None
+    if imm>=0:
+        new_imm = format((imm & (1 <<12)-1),"012b");
+    else:
+        new_imm = format((-imm & (1 << 12)-1),"012b");
+        complement = ''.join('1' if bit == '0' else '0' for bit in imm);
+        two_complement = (bin(int(complement, 2) + 1));
+        new_imm = two_complement;
+
+    new_imm = int(new_imm,2);
+    imm20Bit = (new_imm >> 20) & 0x1;
+    imm10To1bit = (new_imm >> 1) & 0x3FF;
+    imm11Bit = (new_imm >> 11) & 0x1;
+    imm19To12Bit = (new_imm >> 12) & 0x7F;
+
+    return format((imm20Bit << 31) | (imm10To1bit << 21) | (imm11Bit << 20) | (imm19To12Bit << 12) | (rd << 7) | opcode(cmd), '032b');
+
