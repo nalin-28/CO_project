@@ -67,3 +67,55 @@ def assembly(input_file_path, output_file_path):
                         print("Resistor Naming is not correct")
                         return
                 list_contents.append(iTypeinstruction(rd, rs1, imm, instruction))
+            elif typeOfinstruction(instruction)=="B":
+                inst_vars_1 = inst_vars[2].split(',')
+                rs1 = rg_nums[inst_vars_1[0]]
+                rs2 = rg_nums[inst_vars_1[1]]
+                if inst_vars_1[2].isdigit():
+                    imm = int(inst_vars_1[2])
+                else:
+                    for i in range(len(labels)):
+                        if(labels[i][0]==inst_vars_1[2]):
+                            imm = int((labels[i][1] - contents_p.index(line))) *4
+                if(inst_vars_1[0] not in rg_nums.keys() or inst_vars_1[1] not in rg_nums.keys()):
+                    print("Resistor Naming is not correct")
+                    return
+                list_contents.append(bTypeinstruction(rs1, rs2, imm, instruction))
+
+            elif typeOfinstruction(instruction)=="J":
+                inst_vars_1 = inst_vars[2].split(',')
+                rd = rg_nums[inst_vars_1[0]]
+                if inst_vars_1[1].isdigit():
+                    imm = int(inst_vars_1[1])
+                else:
+                    for i in range(len(labels)):
+                        if(labels[i][0]==inst_vars_1[1]):
+                            imm = int((labels[i][1] - contents_p.index(line)))*4
+                if(inst_vars_1[0] not in rg_nums.keys()):
+                    print("Resistor Naming is not correct")
+                    return
+                list_contents.append(jTypeinstruction(rd, imm,instruction))
+        
+        else:
+            instruction = inst_vars[0]
+
+            if typeOfinstruction(instruction)=="R":
+                inst_vars_1 = inst_vars[1].split(',')
+                rd = rg_nums[inst_vars_1[0]]
+                rs1 = rg_nums[inst_vars_1[1]]
+                rs2 = rg_nums[inst_vars_1[2]]
+                if(inst_vars_1[0] not in rg_nums.keys() or inst_vars_1[1] not in rg_nums.keys() or inst_vars_1[2] not in rg_nums.keys()):
+                    print("Resistor Naming is not correct")
+                    return
+                list_contents.append(rTypeinstruction(rd, rs1, rs2, instruction))
+
+            elif typeOfinstruction(instruction)=="S":
+                inst_vars_1 = inst_vars[1].split(',')
+                rs2 = rg_nums[inst_vars_1[0]]
+                imm_rs1 = inst_vars_1[1]
+                imm = int(imm_rs1[:imm_rs1.find('(')])
+                rs1 = rg_nums[imm_rs1[imm_rs1.find('(')+1:-1]]
+                if(inst_vars_1[0] not in rg_nums.keys() or rs1 not in rg_nums.values()):
+                    print("Resistor Naming is Not Correct")
+                    return
+                list_contents.append(sTypeinstruction(rs1, rs2, imm,instruction))
