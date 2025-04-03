@@ -40,10 +40,6 @@ def riscv_binary_to_registers(binary_instruction, registers, pc, datamem):
             result = registers[rs1] + imm_val
             if rd != 0:
                 registers[rd] = result & 0xFFFFFFFF
-        elif funct3 == "011":  # SLTIU
-            result = 1 if (registers[rs1] & 0xFFFFFFFF) < (imm_val & 0xFFFFFFFF) else 0
-            if rd != 0:
-                registers[rd] = result
 
     # R-type instructions
     elif opcode == "0110011":
