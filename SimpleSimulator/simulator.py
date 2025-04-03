@@ -82,4 +82,68 @@ def riscv_binary_to_registers(binary_instruction, registers, pc, datamem):
         elif funct3 == "001":  # BNE
             if registers[rs1] != registers[rs2]:
                 new_pc = pc + (imm_val // 4)
+    # S-type instructions
+    elif opcode == "0100011":  # SW
+        imm_high = binary_instruction[:7]
+        imm_low = binary_instruction[20:25]
+        imm = imm_high + imm_low
+        imm_val = binary_to_int(imm)
+        addr = registers[rs1] + imm_val
+        if addr % 4 == 0:
+            datamem[addr] = registers[rs2] & 0xFFFFFFFF
+
+    # J-type instructions (JAL)
+    elif opcode == "1101111":
+        imm_20 = binary_instruction[0]
+        imm_10_1 = binary_instruction[1:11]
+        imm_11 = binary_instruction[11]
+        imm_19_12 = binary_instruction[12:20]
+        imm = imm_20 + imm_19_12 + imm_11 + imm_10_1
+        imm_val = binary_to_int(imm) * 2  # Byte offset
+        new_pc = pc + (imm_val // 4)
+        if rd != 0:
+            registers[rd] = (pc + 1) * 4
+
+    return registers, new_pc
+
+
+def process_binary_instructions(input_file, output_file):
+    # Main function to process instructions from input file and write to output file.
+    try:
+        binary_instructions = read_instructions_from_file(input_file)
+    except FileNotFoundError:
+        print(f"Error: Input file '{input_file}' not found!")
+        return
+
+    virtual_halt = "00000000000000000000000001100011"
+    registers = [0] * 32
+    registers[2] = 0x17C  # Stack pointer
+    pc = 0
+    datamem = {0x00010000 + 4 * i: 0 for i in range(32)}
+
+    with open(output_file, "w") as file:
+        while pc < len(binary_instructions):
+            current_instr = binary_instructions[pc]
+            if current_instr == virtual_halt:
+                break
+
+            original_pc = pc
+            registers_copy = registers.copy()
+            registers, new_pc = riscv_binary_to_registers(current_instr, registers_copy, pc, datamem)
+            pc = new_pc
+
+            # Write PC after instruction execution
+            current_pc_value = new_pc * 4
+            file.write(f"0b{current_pc_value:032b} ")
+            for reg in registers:
+                file.write(f"0b{reg & 0xFFFFFFFF:032b} ")
+            file.write("\n")
+
+        # Write final state
+        if pc < len(binary_instructions):
+            current_pc_value = pc * 4
+            file.write(f"0b{current_pc_value:032b} ")
+            for reg in registers:
+                file.write(f"0b{reg & 0xFFFFFFFF:032b} ")
+            file.write("\n")
 
