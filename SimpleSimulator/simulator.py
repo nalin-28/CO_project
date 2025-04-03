@@ -147,3 +147,99 @@ def process_binary_instructions(input_file, output_file):
                 file.write(f"0b{reg & 0xFFFFFFFF:032b} ")
             file.write("\n")
 
+        # Write data memory
+        for i in range(32):
+            addr = 0x00010000 + 4 * i
+            val = datamem.get(addr, 0)
+            file.write(f"0x{addr:08X}:0b{val:032b}\n")
+
+def process_binary_instructions(input_file, output_file):
+    # Main function to process instructions from input file and write to output file.
+    try:
+        binary_instructions = read_instructions_from_file(input_file)
+    except FileNotFoundError:
+        print(f"Error: Input file '{input_file}' not found!")
+        return
+
+    virtual_halt = "00000000000000000000000001100011"
+    registers = [0] * 32
+    registers[2] = 0x17C  # Stack pointer
+    pc = 0
+    datamem = {0x00010000 + 4 * i: 0 for i in range(32)}
+
+    with open(output_file, "w") as file:
+        while pc < len(binary_instructions):
+            current_instr = binary_instructions[pc]
+            if current_instr == virtual_halt:
+                break
+
+            original_pc = pc
+            registers_copy = registers.copy()
+            registers, new_pc = riscv_binary_to_registers(current_instr, registers_copy, pc, datamem)
+            pc = new_pc
+
+            # Write PC after instruction execution
+            current_pc_value = new_pc * 4
+            file.write(f"0b{current_pc_value:032b} ")
+            for reg in registers:
+                file.write(f"0b{reg & 0xFFFFFFFF:032b} ")
+            file.write("\n")
+
+        # Write final state
+        if pc < len(binary_instructions):
+            current_pc_value = pc * 4
+            file.write(f"0b{current_pc_value:032b} ")
+            for reg in registers:
+                file.write(f"0b{reg & 0xFFFFFFFF:032b} ")
+            file.write("\n")
+
+        # Write data memory
+        for i in range(32):
+            addr = 0x00010000 + 4 * i
+            val = datamem.get(addr, 0)
+            file.write(f"0x{addr:08X}:0b{val:032b}\n")
+def process_binary_instructions(input_file, output_file):
+    # Main function to process instructions from input file and write to output file.
+    try:
+        binary_instructions = read_instructions_from_file(input_file)
+    except FileNotFoundError:
+        print(f"Error: Input file '{input_file}' not found!")
+        return
+
+    virtual_halt = "00000000000000000000000001100011"
+    registers = [0] * 32
+    registers[2] = 0x17C  # Stack pointer
+    pc = 0
+    datamem = {0x00010000 + 4 * i: 0 for i in range(32)}
+
+    with open(output_file, "w") as file:
+        while pc < len(binary_instructions):
+            current_instr = binary_instructions[pc]
+            if current_instr == virtual_halt:
+                break
+
+            original_pc = pc
+            registers_copy = registers.copy()
+            registers, new_pc = riscv_binary_to_registers(current_instr, registers_copy, pc, datamem)
+            pc = new_pc
+
+            # Write PC after instruction execution
+            current_pc_value = new_pc * 4
+            file.write(f"0b{current_pc_value:032b} ")
+            for reg in registers:
+                file.write(f"0b{reg & 0xFFFFFFFF:032b} ")
+            file.write("\n")
+
+        # Write final state
+        if pc < len(binary_instructions):
+            current_pc_value = pc * 4
+            file.write(f"0b{current_pc_value:032b} ")
+            for reg in registers:
+                file.write(f"0b{reg & 0xFFFFFFFF:032b} ")
+            file.write("\n")
+
+        # Write data memory
+        for i in range(32):
+            addr = 0x00010000 + 4 * i
+            val = datamem.get(addr, 0)
+            file.write(f"0x{addr:08X}:0b{val:032b}\n")
