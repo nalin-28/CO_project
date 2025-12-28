@@ -106,7 +106,7 @@ python3 SimpleSimulator/simulator.py sample.bin trace.txt
 
 ---
 
-## 📚 What I Learned
+## 📚 Key Learnings
 
 - Computer architecture and RISC-V ISA design principles
 - Assembly language programming and instruction encoding
@@ -119,14 +119,3 @@ python3 SimpleSimulator/simulator.py sample.bin trace.txt
 ## 📄 License
 
 This project is for **educational purposes only**.
-
----
-
-## 📧 Contact
-
-**Tanish Jindal** | CSE + Applied Math | IIIT Delhi  
-📧 tanish24579@iiitd.ac.in | 💼 [LinkedIn]((https://www.linkedin.com/in/tanish-jindal-a21104344/)) | 🐙 [GitHub](https://github.com/tanish-j12)
-
----
-
-⭐ **Star this repository if you find it useful!**
